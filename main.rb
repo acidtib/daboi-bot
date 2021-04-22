@@ -9,7 +9,7 @@ module Helpers
   extend ActiveSupport::NumberHelper
 end
 
-bot = Discordrb::Commands::CommandBot.new(token: ENV["DISCORD_TOKEN"], client_id: ENV["DISCORD_CLIENT_ID"], prefix: ENV["DISCORD_PREFIX"])
+bot = Discordrb::Commands::CommandBot.new(token: ENV["DISCORD_TOKEN"] || "xx", client_id: ENV["DISCORD_CLIENT_ID"] || "xx", prefix: ENV["DISCORD_PREFIX"] || "$")
 
 bot.command :info do |event, coin|
 
