@@ -19,3 +19,7 @@
 /.ruby-version
 
 .env
+
+charts/*
+
+!charts/.gitkeep

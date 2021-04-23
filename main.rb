@@ -2,6 +2,8 @@ require 'discordrb'
 require 'active_support/all'
 require 'httparty'
 require 'json'
+require 'base64'
+require 'securerandom'
 require 'pp'
 
 
@@ -85,6 +87,44 @@ BOT.command :info do |event, coin|
         embed.title = "We had an issue pulling #{coin}"
         embed.colour = 0xd0021b
         embed.description = "error code: #{requestCoin.code} ```\n#{errorData}```"
+      end
+
+      awaitClear(message)
+    end
+  end
+end
+
+BOT.command :c do |event, ticker|
+  if ticker == "help" || ticker.nil? || ticker.empty?
+    help(event)
+  else
+    ticker = ticker.upcase
+
+    requestChart = HTTParty.get("http://chart-image.api.dabois.capital/#{ticker}/1h")
+
+    if requestChart.code == 200
+      chartData = JSON.parse(requestChart.body)
+
+      img_from_base64 = Base64.decode64(chartData["img"].gsub("data:image/png;base64,", ""))
+
+      imgPath = "charts/#{SecureRandom.uuid}.png"
+
+      File.open(imgPath, 'wb') do|f|
+        f.write(img_from_base64)
+      end
+
+      message = event.send_file(File.open(imgPath, 'r'))
+
+      File.delete(imgPath) if File.exist?(imgPath)
+
+      awaitClear(message)
+    else
+      errorData = JSON.parse(requestChart.body)
+
+      message = event.channel.send_embed do |embed|
+        embed.title = "We had an issue pulling #{ticker}"
+        embed.colour = 0xd0021b
+        embed.description = "error code: #{requestChart.code} ```\n#{errorData}```"
       end
 
       awaitClear(message)
