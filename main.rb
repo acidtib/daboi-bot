@@ -9,20 +9,31 @@ module Helpers
   extend ActiveSupport::NumberHelper
 end
 
-bot = Discordrb::Commands::CommandBot.new(token: ENV["DISCORD_TOKEN"], client_id: ENV["DISCORD_CLIENT_ID"], prefix: ENV["DISCORD_PREFIX"])
+BOT = Discordrb::Commands::CommandBot.new(token: ENV["DISCORD_TOKEN"], client_id: ENV["DISCORD_CLIENT_ID"], prefix: ENV["DISCORD_PREFIX"])
 
+CLEARREACTION = "\u{1F44D}"
+
+def awaitClear(message)
+  message.react(CLEARREACTION)
+
+  BOT.add_await!(Discordrb::Events::ReactionAddEvent, message: message, emoji: CLEARREACTION) do |_reaction_event|
+    message.delete
+  end
+end
 
 def help(event)
-  event.channel.send_embed do |embed|
+  message = event.channel.send_embed do |embed|
     embed.title = "Market Details"
     embed.colour = 0xa5af0d
     embed.description = "The $info command will retrive up-today information from any coin being tracked by (CoinGecko)[http://api.coingecko.com]"
 
     embed.add_field(name: "$info Command", value: "`$info coin-name` \n\nexample: \n`$info bitcoin`")
   end
+
+  awaitClear(message)
 end
 
-bot.command :info do |event, coin|
+BOT.command :info do |event, coin|
 
   if coin == "help" || coin.nil? || coin.empty?
     help(event)
@@ -52,7 +63,7 @@ bot.command :info do |event, coin|
       coinPastMonth = coinData["market_data"]["price_change_percentage_30d"]
       coinPastYear = coinData["market_data"]["price_change_percentage_1y"]
 
-      event.channel.send_embed do |embed|
+      message = event.channel.send_embed do |embed|
         embed.title = "#{coinName} (#{coinSymbol.upcase})"
         embed.colour = 0x29e027
         embed.url = coinHomepage
@@ -65,16 +76,20 @@ bot.command :info do |event, coin|
 
         embed.add_field(name: "---", value: "[Data by Dabois.Capital](https://dabois.capital)")
       end
+
+      awaitClear(message)
     else
       errorData = JSON.parse(requestCoin.body)
 
-      event.channel.send_embed do |embed|
+      message = event.channel.send_embed do |embed|
         embed.title = "We had an issue pulling #{coin}"
         embed.colour = 0xd0021b
         embed.description = "error code: #{requestCoin.code} ```\n#{errorData}```"
       end
+
+      awaitClear(message)
     end
   end
 end
 
-bot.run
+BOT.run
