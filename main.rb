@@ -27,9 +27,11 @@ def help(event)
   message = event.channel.send_embed do |embed|
     embed.title = "Market Details"
     embed.colour = 0xa5af0d
-    embed.description = "The $info command will retrive up-today information from any coin being tracked by (CoinGecko)[http://api.coingecko.com]"
+    embed.description = "The $info and $c command will retrive up-today information from any coin being tracked by CoinGecko and Binance.us"
 
-    embed.add_field(name: "$info Command", value: "`$info coin-name` \n\nexample: \n`$info bitcoin`")
+    embed.add_field(name: "$info command", value: "`$info coin-name` \n\nexample: \n`$info bitcoin`")
+
+    embed.add_field(name: "$c command", value: "`$c ticker` \n\nexample: \n`$c dogeusd`")
   end
 
   awaitClear(message)
